@@ -30,9 +30,9 @@ namespace WatchdogService
             // Read configuration list from somewhere.
             List<BE_ServerConfiguration> Configurations = new List<BE_ServerConfiguration>() { new BE_ServerConfiguration() { 
                                                          Name = "A3", 
-                                                         Hostname = "wogames.info", 
+                                                         Hostname = "localhost", 
                                                          Port=2312,
-                                                         Password="!Password1" }};
+                                                         Password="11111111" }};
             
 
             // For each configuration (server) create a separate battleye listener.
