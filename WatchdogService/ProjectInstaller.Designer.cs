@@ -43,7 +43,6 @@
             this.ServiceInstaller.Description = "BattlEye server watchdog";
             this.ServiceInstaller.DisplayName = "BattlEye Watchdog";
             this.ServiceInstaller.ServiceName = "BattlEyeService";
-            this.ServiceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller
             // 

@@ -28,7 +28,7 @@ namespace WatchdogService.Classes
 
             while (BEClient.Connect() != BattlEyeConnectionResult.Success)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(5000);
                 Console.WriteLine("Retrying RCON connection to {0}:{1}", pCredentials.Host, pCredentials.Port);
             }
 

@@ -6,20 +6,29 @@ using System.Text;
 using System.Threading.Tasks;
 using WatchdogService.Enums;
 using BattleNET;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace WatchdogService.Classes
 {
+    [Serializable]
     public class BE_Server
     {
         /* Properties */
+        [JsonIgnore]
         BE_Executor Executor { get; set; }
-        Dictionary<int, BE_Player> Players { get; set; }
+
+        public String ServerIdentifier { get; set; }
+        public List<BE_Player> Players { get; set; }
 
         /* Constructors */
-        public BE_Server(BattlEyeLoginCredentials pCredentials)
+        private BE_Server() { }
+
+        public BE_Server(BattlEyeLoginCredentials pCredentials, String pIdentifier)
         {
+            this.ServerIdentifier = pIdentifier;
             this.Executor = new BE_Executor(pCredentials);
-            this.Players = new Dictionary<int, BE_Player>();
+            this.Players = new List<BE_Player>();
             this.Executor.ClientMessageReceived += new BE_Executor.MessageReceivedEventHandler(RouteMessage);
         }
 
@@ -58,27 +67,28 @@ namespace WatchdogService.Classes
         /* Internal player tracking */
         private void AddPlayer(BE_Player pPayload)
         {
-            if (!Players.ContainsKey(pPayload.Id))
+            if (!Players.Exists(p => p.Id == pPayload.Id))
             {
-                Players.Add(pPayload.Id, pPayload);
+                Players.Add(pPayload);
             }
         }
 
         private void RemovePlayer(BE_Player pPayload)
         {
-            if (Players.ContainsKey(pPayload.Id))
+            if (Players.Exists(p => p.Id == pPayload.Id))
             {
-                Players.Remove(pPayload.Id);
+                Players.Remove(Players.Find(p => p.Id == pPayload.Id));
             }
         }
 
         private void UpdatePlayer(BE_Player pPayload)
         {
-            if (Players.ContainsKey(pPayload.Id))
+            if (Players.Exists(p => p.Id == pPayload.Id))
             {
-                if (Players[pPayload.Id].Guid != null | Players[pPayload.Id].Guid != pPayload.Guid)
+                var playerObject = Players.Find(p=>p.Id == pPayload.Id);
+                if (playerObject.Guid != null | playerObject.Guid != pPayload.Guid)
                 {
-                    Players[pPayload.Id].Guid = pPayload.Guid;
+                    playerObject.Guid = pPayload.Guid;
                 }
             }
         }
