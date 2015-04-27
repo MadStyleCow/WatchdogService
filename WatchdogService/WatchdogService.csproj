@@ -40,6 +40,7 @@
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,7 +61,10 @@
     <Compile Include="Classes\BE_Parser.cs" />
     <Compile Include="Classes\BE_Player.cs" />
     <Compile Include="Classes\BE_Message.cs" />
+    <Compile Include="Classes\Services\GetPlayersService.cs" />
+    <Compile Include="Classes\WatchdogConfiguration.cs" />
     <Compile Include="Enums\BE_MessageType.cs" />
+    <Compile Include="Interfaces\IGetPlayersService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
@@ -79,10 +83,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="D:\GitHub\BattleNET\BattleNET\BattleNET.csproj">
+    <ProjectReference Include="..\..\BattleNET\BattleNET\BattleNET.csproj">
       <Project>{4fbb3734-215b-45b1-bdbc-0efa156a6900}</Project>
       <Name>BattleNET</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

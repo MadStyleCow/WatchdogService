@@ -10,47 +10,70 @@ using System.Threading.Tasks;
 using BattleNET;
 using WatchdogService.Classes;
 using System.Net;
+using System.ServiceModel;
+using WatchdogService.Classes.Services;
+using System.ServiceModel.Description;
 
 namespace WatchdogService
 {
     public partial class BattlEyeService : ServiceBase
     {
-        List<BE_Server> Servers;
+        /* Properties */
+        WatchdogConfiguration Configuration { get; set; }
+        List<BE_Server> ActiveServers { get; set; }
+        ServiceHost Host { get; set; }
 
+        /* Constructors */
         public BattlEyeService()
         {
             InitializeComponent();
         }
 
+        /* Event handlers */
         protected override void OnStart(string[] args)
         {
-            // Initialize server list
-            Servers = new List<BE_Server>();
+            /* Initialize server list */
+            ActiveServers = new List<BE_Server>();
 
-            // Read configuration list from somewhere.
-            List<BE_ServerConfiguration> Configurations = new List<BE_ServerConfiguration>() { new BE_ServerConfiguration() { 
-                                                         Name = "A3", 
-                                                         Hostname = "localhost", 
-                                                         Port=2312,
-                                                         Password="11111111" }};
-            
+            /* Read configuration set-up */
+            Configuration = new WatchdogConfiguration()
+            {
+                Port = 8083,
+                Servers = new List<BE_ServerConfiguration>()
+            {
+                new BE_ServerConfiguration()
+                { Hostname = "193.19.118.182", Port = 2302, Name = "A2", Password = "banan" }
+            }
+            };
 
             // For each configuration (server) create a separate battleye listener.
-            foreach(BE_ServerConfiguration config in Configurations)
+            foreach (BE_ServerConfiguration ServerConfiguration in Configuration.Servers)
             {
-                Servers.Add(new BE_Server(new BattlEyeLoginCredentials()
+                ActiveServers.Add(new BE_Server(new BattlEyeLoginCredentials()
                 {
-                    Host = IPAddress.Parse(config.Hostname),
-                    Password = config.Password,
-                    Port = config.Port
+                    Host = IPAddress.Parse(ServerConfiguration.Hostname),
+                    Password = ServerConfiguration.Password,
+                    Port = ServerConfiguration.Port
                 }));
             }
+
+            /* Initialize the web-service */
+            Host = new ServiceHost(typeof(GetPlayersService), new Uri(String.Format("http://localhost:{0}/{1}", Configuration.Port, GetPlayersService.URL)));
+            // Enable metadata publishing.
+            ServiceMetadataBehavior SMB = new ServiceMetadataBehavior();
+            SMB.HttpGetEnabled = true;
+            SMB.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
+            Host.Description.Behaviors.Add(SMB);
+
+            Host.Open();
         }
 
         protected override void OnStop()
         {
+            Host.Close();
+
             // Shutdown all active server connections.
-            foreach(BE_Server Server in Servers)
+            foreach(BE_Server Server in ActiveServers)
             {
                 Server.Shutdown();
             }
