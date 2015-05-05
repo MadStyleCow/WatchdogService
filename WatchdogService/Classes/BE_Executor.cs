@@ -1,11 +1,15 @@
 ﻿using BattleNET;
 using System;
 using System.Threading;
+using WatchdogService.Enums;
 
 namespace WatchdogService.Classes
 {
     class BE_Executor
     {
+        /* Static variables */
+        int Timeout = 5000;
+
         /* Properties */
         BattleNET.BattlEyeClient BEClient { get; set; }
 
@@ -13,10 +17,7 @@ namespace WatchdogService.Classes
         public event MessageReceivedEventHandler ClientMessageReceived;
 
         /* Constructors */
-        public BE_Executor(BattlEyeLoginCredentials pCredentials)
-        {
-            this.Listen(pCredentials);
-        }
+        public BE_Executor() { }
 
         /* Public methods */
         public void Listen(BattlEyeLoginCredentials pCredentials)
@@ -26,14 +27,15 @@ namespace WatchdogService.Classes
                 ReconnectOnPacketLoss = true               
             };
 
-            while (BEClient.Connect() != BattlEyeConnectionResult.Success)
-            {
-                Thread.Sleep(5000);
-                Console.WriteLine("Retrying RCON connection to {0}:{1}", pCredentials.Host, pCredentials.Port);
-            }
-
             BEClient.BattlEyeMessageReceived += new BattlEyeMessageEventHandler(MessageReceived);
             BEClient.BattlEyeDisconnected += new BattlEyeDisconnectEventHandler(Disconnected);
+            BEClient.BattlEyeConnected += new BattlEyeConnectEventHandler(Connected);
+
+            while (BEClient.Connect() != BattlEyeConnectionResult.Success)
+            {
+                Thread.Sleep(Timeout);
+                Console.WriteLine("Retrying RCON connection to {0}:{1}", pCredentials.Host, pCredentials.Port);
+            }
         }
 
         public void Stop()
@@ -77,11 +79,14 @@ namespace WatchdogService.Classes
         /* Private methods */
         private void Disconnected(BattlEyeDisconnectEventArgs pArgs)
         {
+            SendMessage(new BE_Message(BE_MessageType.ServerDisconnected, null));
+
             if(pArgs.DisconnectionType != BattlEyeDisconnectionType.Manual)
             {
                 while (BEClient.Connect() != BattlEyeConnectionResult.Success)
                 {
-                    Thread.Sleep(1000);
+                    Console.WriteLine("Attempting to reconnect to RCON server");
+                    Thread.Sleep(Timeout);
                 }
             }
         }
@@ -89,10 +94,23 @@ namespace WatchdogService.Classes
         private void MessageReceived(BattlEyeMessageEventArgs pArgs)
         {
             Console.WriteLine(pArgs.Message);
+            SendMessage(BE_Parser.Parse(pArgs.Message));
+        }
 
-            if(ClientMessageReceived != null)
+        private void Connected(BattlEyeConnectEventArgs pArgs)
+        {
+            if (pArgs.ConnectionResult == BattlEyeConnectionResult.Success)
             {
-                ClientMessageReceived(BE_Parser.Parse(pArgs.Message));
+                SendMessage(new BE_Message(BE_MessageType.ServerConnected, null));
+                Execute(BattlEyeCommand.Players);
+            }
+        }
+
+        private void SendMessage(BE_Message pMessage)
+        {
+            if (ClientMessageReceived != null)
+            {
+                ClientMessageReceived(pMessage);
             }
         }
     }

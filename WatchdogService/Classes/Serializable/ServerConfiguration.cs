@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace WatchdogService.Classes
 {
-    [Serializable()]
-    public class BE_ServerConfiguration
+    [Serializable]
+    public class ServerConfiguration
     {
         /* Properties */
         public string Name { get; set; }
@@ -16,6 +16,6 @@ namespace WatchdogService.Classes
         public string Password { get; set; }
 
         /* Constructors */
-        public BE_ServerConfiguration() { }
+        public ServerConfiguration() { }
     }
 }

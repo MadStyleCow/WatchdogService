@@ -1,5 +1,6 @@
 ﻿using BattleNET;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using WatchdogService.Enums;
 
@@ -14,7 +15,8 @@ namespace WatchdogService.Classes
                                         @"Player #(\d*) (.*) disconnected",
                                         @"Player #(\d*) (.*) \((.*)\) has been kicked by BattlEye: .*",
                                         @"\((\w*)\) (.*): @(.*)",
-                                        @"\((\w*)\) (.*): (.*)"};
+                                        @"\((\w*)\) (.*): (.*)",
+                                        @"(\d)\s{3}(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}):\d{4}\s{1,4}-?\d{1,4}\s{3,4}(\w+)\(.{1,2}\)\s{1,2}(.*) (?:\(Lobby\))"};
 
         public static BE_Message Parse(String pInputString)
         {
@@ -45,6 +47,22 @@ namespace WatchdogService.Classes
                         case 6:
                             // TODO: To be implemented in the future;
                             break;
+
+                        case 7:
+                            var PlayerList = new List<BE_Player>();
+
+                            int i = 1;
+                            while(i < match.Groups.Count)
+                            {
+                                PlayerList.Add(new BE_Player()
+                                    {
+                                        Id = int.Parse(match.Groups[i++].Value),
+                                        IP = match.Groups[i++].Value,
+                                        Guid = match.Groups[i++].Value,
+                                        Name = match.Groups[i++].Value
+                                    });
+                            }
+                            return new BE_Message(BE_MessageType.Players, PlayerList);
                       
                         default:
                             return new BE_Message(BE_MessageType.Unknown, pInputString);

@@ -11,8 +11,9 @@ namespace WatchdogService.Classes
     {
         /* Properties */
         public int Port { get; set; }
-        public List<BE_ServerConfiguration> Servers { get; set; }
+        public List<ServerConfiguration> Servers { get; set; }
 
+        /* Constructors */
         public WatchdogConfiguration() { }
     }
 }

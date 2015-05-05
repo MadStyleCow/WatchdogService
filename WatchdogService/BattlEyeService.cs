@@ -41,7 +41,7 @@ namespace WatchdogService
                 Utilities.XMLSerializer.DeserializeFromFile(ConfigLocation, typeof(WatchdogConfiguration));
 
             // For each configuration (server) create a separate battleye listener.
-            foreach (BE_ServerConfiguration ServerConfiguration in Configuration.Servers)
+            foreach (ServerConfiguration ServerConfiguration in Configuration.Servers)
             {
                 ActiveServers.Add(new BE_Server(new BattlEyeLoginCredentials()
                 {

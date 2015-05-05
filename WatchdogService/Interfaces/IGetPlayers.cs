@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 using System.Threading.Tasks;
+using WatchdogService.Classes.Serializable;
 
 namespace WatchdogService.Interfaces
 {
@@ -13,6 +14,6 @@ namespace WatchdogService.Interfaces
     {
         [OperationContract]
         [WebGet(ResponseFormat= WebMessageFormat.Json)]
-        string GetPlayerList();
+        ServerList GetPlayerList();
     }
 }

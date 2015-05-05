@@ -1,13 +1,7 @@
-﻿using System;
+﻿using BattleNET;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using WatchdogService.Enums;
-using BattleNET;
-using System.Xml.Serialization;
-using Newtonsoft.Json;
 
 namespace WatchdogService.Classes
 {
@@ -15,11 +9,12 @@ namespace WatchdogService.Classes
     public class BE_Server
     {
         /* Properties */
-        [JsonIgnore]
-        BE_Executor Executor { get; set; }
-
         public String ServerIdentifier { get; set; }
         public List<BE_Player> Players { get; set; }
+        public bool Online { get; set; }
+
+        /* Internal properties */
+        BE_Executor Executor { get; set; }
 
         /* Constructors */
         private BE_Server() { }
@@ -27,9 +22,11 @@ namespace WatchdogService.Classes
         public BE_Server(BattlEyeLoginCredentials pCredentials, String pIdentifier)
         {
             this.ServerIdentifier = pIdentifier;
-            this.Executor = new BE_Executor(pCredentials);
             this.Players = new List<BE_Player>();
+            this.Online = false;
+            this.Executor = new BE_Executor();
             this.Executor.ClientMessageReceived += new BE_Executor.MessageReceivedEventHandler(RouteMessage);
+            this.Executor.Listen(pCredentials);
         }
 
         /* Public methods */
@@ -58,13 +55,45 @@ namespace WatchdogService.Classes
                 case BE_MessageType.Verified:
                     UpdatePlayer((BE_Player)pMessage.Content);
                     break;
+
+                case BE_MessageType.Players:
+                    PlayerList((List<BE_Player>)pMessage.Content);
+                    break;
+
+                case BE_MessageType.ServerConnected:
+                    Connected();
+                    break;
+
+                case BE_MessageType.ServerDisconnected:
+                    Disconnected();
+                    break;
         
                 default:
                     break;
             }
         }
+        /* Internal server state tracking */
+        private void Connected()
+        {        
+            this.Online = true;
+            this.Players.Clear();
+        }
+
+        private void Disconnected()
+        {
+            this.Online = false;
+            this.Players.Clear();
+        }
 
         /* Internal player tracking */
+        private void PlayerList(List<BE_Player> pPayload)
+        {     
+            foreach(BE_Player player in pPayload)
+            {
+                Players.Add(player);
+            }
+        }
+
         private void AddPlayer(BE_Player pPayload)
         {
             if (!Players.Exists(p => p.Id == pPayload.Id))

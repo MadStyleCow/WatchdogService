@@ -8,6 +8,8 @@ namespace WatchdogService.Enums
 {
     public enum BE_MessageType
     {
+        ServerConnected,
+        ServerDisconnected,
         Unknown,
         Invalid,
         Connected,
